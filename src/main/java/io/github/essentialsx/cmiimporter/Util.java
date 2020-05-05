@@ -38,14 +38,14 @@ public class Util {
         return result;
     }
 
-    public static Location parseLocation(String input) {
-        String[] split = input.split(":");
+    public static Location parseLocation(String input, String separator, boolean reverseYawPitch) {
+        String[] split = input.split(separator);
         World world = Bukkit.getWorld(split[0]);
         double x = Double.parseDouble(split[1]);
         double y = Double.parseDouble(split[2]);
         double z = Double.parseDouble(split[3]);
-        float yaw = Float.parseFloat(split[5]);
-        float pitch = Float.parseFloat(split[4]);
+        float yaw = Float.parseFloat((reverseYawPitch ? split[5] : split[4]));
+        float pitch = Float.parseFloat((reverseYawPitch ? split[4] : split[5]));
         return new Location(world, x, y, z, yaw, pitch);
     }
 

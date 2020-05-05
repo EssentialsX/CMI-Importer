@@ -39,6 +39,7 @@ public final class CMIImporter extends JavaPlugin implements Listener {
             .put("users", Migrations::migrateUsers)
             .put("homes", Migrations::migrateHomes)
             .put("nicknames", Migrations::migrateNicknames)
+            .put("warps", Migrations::migrateWarps)
             .build();
 
     @Override

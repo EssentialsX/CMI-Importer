@@ -25,7 +25,10 @@ import com.earth2me.essentials.OfflinePlayer;
 import com.earth2me.essentials.User;
 import net.ess3.nms.refl.ReflUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -64,13 +67,14 @@ public class Migrations {
     }
 
     static void migrateHomes(Essentials ess) {
+        final String homeLocSeparator = ":";
         try {
             List<DbRow> results = DB.getResults("SELECT (player_uuid, Homes)");
             for (DbRow row : results) {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 User user = ess.getUser(uuid);
 
-                Util.parseMap(row.getString("Homes")).forEach((name, loc) -> user.setHome(name, Util.parseLocation(loc)));
+                Util.parseMap(row.getString("Homes")).forEach((name, loc) -> user.setHome(name, Util.parseLocation(loc, homeLocSeparator, true)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,6 +94,23 @@ public class Migrations {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+        }
+    }
+
+    static void migrateWarps(Essentials ess) {
+        final String warpLocSeparator = ";";
+        try {
+            File warpsFile = new File(ess.getDataFolder(), "../CMI/warps.yml");
+            YamlConfiguration warpsConfig = YamlConfiguration.loadConfiguration(warpsFile);
+            for (String key : warpsConfig.getKeys(false)) {
+                String locString = warpsConfig.getString(key + ".Location");
+                if (locString != null) {
+                    Location loc = Util.parseLocation(locString, warpLocSeparator, false);
+                    ess.getWarps().setWarp(null, key, loc);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
