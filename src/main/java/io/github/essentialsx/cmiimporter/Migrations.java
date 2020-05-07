@@ -23,6 +23,7 @@ import co.aikar.idb.DbRow;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.OfflinePlayer;
 import com.earth2me.essentials.User;
+import net.ess3.api.MaxMoneyException;
 import net.ess3.nms.refl.ReflUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -31,6 +32,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
@@ -111,6 +113,20 @@ public class Migrations {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    static void migrateEconomy(Essentials ess) {
+        try {
+            List<DbRow> results = DB.getResults("SELECT (player_uuid, Balance)");
+            for (DbRow row : results) {
+                UUID uuid = UUID.fromString(row.getString("player_uuid"));
+                User user = ess.getUser(uuid);
+                Double money = row.getDbl("Balance", 0.0);
+                user.setMoney(BigDecimal.valueOf(money));
+            }
+        } catch (SQLException | MaxMoneyException ex) {
+            ex.printStackTrace();
         }
     }
 
