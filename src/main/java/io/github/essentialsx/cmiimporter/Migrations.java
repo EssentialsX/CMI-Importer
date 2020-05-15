@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class Migrations {
@@ -56,7 +57,6 @@ public class Migrations {
         migrateNicknames(ess);
         migrateWarps(ess);
         migrateEconomy(ess);
-        migrateLastLogin(ess);
     }
 
     static void migrateUsers(Essentials ess) {
@@ -93,7 +93,15 @@ public class Migrations {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 User user = ess.getUser(uuid);
 
-                Util.parseMap(row.getString("Homes")).forEach((name, loc) -> user.setHome(name, Util.parseLocation(loc, homeLocSeparator, true)));
+                for (Map.Entry<String, String> entry : Util.parseMap(row.getString("Homes")).entrySet()) {
+                    String name = entry.getKey();
+                    String loc = entry.getValue();
+                    try {
+                        user.setHome(name, Util.parseLocation(loc, homeLocSeparator, true));
+                    } catch (Exception ex) {
+                        System.out.println("Couldn't set home: " + name + " for " + user.getLastAccountName());
+                    }
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -144,20 +152,6 @@ public class Migrations {
                 user.setMoney(bal);
             }
         } catch (SQLException | MaxMoneyException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    static void migrateLastLogin(Essentials ess) {
-        try {
-            List<DbRow> results = DB.getResults("SELECT player_uuid, LastLoginTime FROM " + table("users") + " WHERE player_uuid NOT NULL AND LastLoginTime NOT NULL");
-            for (DbRow row : results) {
-                UUID uuid = UUID.fromString(row.getString("player_uuid"));
-                User user = ess.getUser(uuid);
-                long lastLoginTime = row.getLong("LastLoginTime");
-                user.setLastLogin(lastLoginTime);
-            }
-        } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
