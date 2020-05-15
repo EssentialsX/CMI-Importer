@@ -61,12 +61,11 @@ public class Migrations {
     static void migrateUsers(Essentials ess) {
         try {
             SET_OFFLINE_PLAYER_NAME.setAccessible(true);
-
-            List<DbRow> results = DB.getResults("SELECT (player_uuid, username, FakeAccount) FROM" + table("users") + " WHERE (player_uuid NOT NULL AND username NOT NULL)");
+            List<DbRow> results = DB.getResults("SELECT player_uuid, username, FakeAccount FROM " + table("users") + " WHERE player_uuid NOT NULL AND username NOT NULL");
             for (DbRow row : results) {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 String username = row.getString("username");
-                boolean isNpc = row.get("FakeAccount", false);
+                boolean isNpc = row.getInt("FakeAccount") != 0;
 
                 if (!ess.getUserMap().userExists(uuid)) {
                     OfflinePlayer player = new OfflinePlayer(uuid, Bukkit.getServer());
@@ -88,7 +87,7 @@ public class Migrations {
     static void migrateHomes(Essentials ess) {
         final String homeLocSeparator = ":";
         try {
-            List<DbRow> results = DB.getResults("SELECT (player_uuid, Homes) FROM " + table("users"));
+            List<DbRow> results = DB.getResults("SELECT player_uuid, Homes FROM " + table("users") + " WHERE player_uuid NOT NULL AND Homes NOT NULL");
             for (DbRow row : results) {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 User user = ess.getUser(uuid);
@@ -102,7 +101,7 @@ public class Migrations {
 
     static void migrateNicknames(Essentials ess) {
         try {
-            List<DbRow> results = DB.getResults("SELECT (player_uuid, nickname) FROM " + table("users"));
+            List<DbRow> results = DB.getResults("SELECT player_uuid, nickname FROM " + table("users") + " WHERE player_uuid NOT NULL AND nickname NOT NULL");
             for (DbRow row : results) {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 User user = ess.getUser(uuid);
@@ -135,7 +134,7 @@ public class Migrations {
 
     static void migrateEconomy(Essentials ess) {
         try {
-            List<DbRow> results = DB.getResults("SELECT (player_uuid, Balance) FROM " + table("users"));
+            List<DbRow> results = DB.getResults("SELECT player_uuid, Balance FROM " + table("users") + " WHERE player_uuid NOT NULL AND Balance NOT NULL");
             for (DbRow row : results) {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 User user = ess.getUser(uuid);

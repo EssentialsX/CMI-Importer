@@ -60,12 +60,10 @@ public class DatabaseConfig {
 
     private DatabaseOptions getSQLiteOptions(DatabaseOptions.DatabaseOptionsBuilder builder) {
         File sqliteFile = new File(plugin.getDataFolder(), "../CMI/cmi.sqlite.db");
-
-        builder = builder.dataSourceClassName("org.sqlite.SQLiteDataSource")
+        return builder.sqlite(sqliteFile.getPath())
+                .dataSourceClassName("org.sqlite.SQLiteDataSource")
                 .driverClassName("org.sqlite.JDBC")
-                .dsn(sqliteFile.getPath());
-
-        return builder.build();
+                .build();
     }
 
     private DatabaseOptions getMySQLOptions(DatabaseOptions.DatabaseOptionsBuilder builder) {
