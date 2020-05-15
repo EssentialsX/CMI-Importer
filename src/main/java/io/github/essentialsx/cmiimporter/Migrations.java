@@ -57,6 +57,8 @@ public class Migrations {
         migrateNicknames(ess);
         migrateWarps(ess);
         migrateEconomy(ess);
+        migrateLastLogin(ess);
+        migrateLastLogout(ess);
     }
 
     static void migrateUsers(Essentials ess) {
@@ -159,6 +161,44 @@ public class Migrations {
             ex.printStackTrace();
         }
     }
+
+    static void migrateLastLogin(Essentials ess) {
+        try {
+            List<DbRow> results = DB.getResults("SELECT player_uuid, LastLoginTime FROM " + table("users") + " WHERE player_uuid NOT NULL AND LastLoginTime NOT NULL");
+            for (DbRow row : results) {
+                UUID uuid = UUID.fromString(row.getString("player_uuid"));
+                User user = ess.getUser(uuid);
+                try {
+                    long lastLoginTime = row.getLong("LastLoginTime");
+                    user.setLastLogin(lastLoginTime);
+                } catch (Exception ex) {
+                    System.out.println("Could not set the last login time for: " + user.getLastAccountName());
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // I have this copied to a different method because there might be a chance the last login time / logout time is null separate if a crash were to occur
+    static void migrateLastLogout(Essentials ess) {
+        try {
+            List<DbRow> results = DB.getResults("SELECT player_uuid, LastLogoffTime FROM " + table("users") + " WHERE player_uuid NOT NULL AND LastLogoffTime NOT NULL");
+            for (DbRow row : results) {
+                UUID uuid = UUID.fromString(row.getString("player_uuid"));
+                User user = ess.getUser(uuid);
+                try {
+                    long lastLogoffTime = row.getLong("LastLogoffTime");
+                    user.setLastLogout(lastLogoffTime);
+                } catch (Exception ex) {
+                    System.out.println("Could not set the last logoff time for: " + user.getLastAccountName());
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
 
     private static String table(String table) {
         return prefix + table;
