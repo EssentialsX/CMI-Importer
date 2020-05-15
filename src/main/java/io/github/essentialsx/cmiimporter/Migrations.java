@@ -133,7 +133,11 @@ public class Migrations {
                 String locString = warpsConfig.getString(key + ".Location");
                 if (locString != null) {
                     Location loc = Util.parseLocation(locString, warpLocSeparator, false);
-                    ess.getWarps().setWarp(null, key, loc);
+                    try {
+                        ess.getWarps().setWarp(null, key, loc);
+                    } catch (Exception ex) {
+                        System.out.println("Couldn't migrate warp: " + key);
+                    }
                 }
             }
         } catch (Exception e) {
