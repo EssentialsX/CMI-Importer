@@ -56,6 +56,7 @@ public class Migrations {
         migrateNicknames(ess);
         migrateWarps(ess);
         migrateEconomy(ess);
+        migrateLastLogin(ess);
     }
 
     static void migrateUsers(Essentials ess) {
@@ -138,10 +139,25 @@ public class Migrations {
             for (DbRow row : results) {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 User user = ess.getUser(uuid);
-                Double money = row.getDbl("Balance", 0.0);
-                user.setMoney(BigDecimal.valueOf(money));
+                // Not using valueOf() because it returns scientific notation and Glare isn't advanced enough to find a way to fix this
+                BigDecimal bal = new BigDecimal(row.getDbl("Balance", 0.0));
+                user.setMoney(bal);
             }
         } catch (SQLException | MaxMoneyException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    static void migrateLastLogin(Essentials ess) {
+        try {
+            List<DbRow> results = DB.getResults("SELECT player_uuid, LastLoginTime FROM " + table("users") + " WHERE player_uuid NOT NULL AND LastLoginTime NOT NULL");
+            for (DbRow row : results) {
+                UUID uuid = UUID.fromString(row.getString("player_uuid"));
+                User user = ess.getUser(uuid);
+                long lastLoginTime = row.getLong("LastLoginTime");
+                user.setLastLogin(lastLoginTime);
+            }
+        } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }

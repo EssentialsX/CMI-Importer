@@ -47,6 +47,7 @@ processResources {
 }
 
 shadowJar {
+    minimize()
     relocate 'co.aikar.idb', 'io.github.essentialsx.cmiimporter.idb'
     relocate 'com.zaxxer.hikari', 'io.github.essentialsx.cmiimporter.hikari'
 }
