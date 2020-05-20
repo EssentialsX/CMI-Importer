@@ -154,7 +154,8 @@ public class Migrations {
                 UUID uuid = UUID.fromString(row.getString("player_uuid"));
                 User user = ess.getUser(uuid);
                 // Not using valueOf() because it returns scientific notation and Glare isn't advanced enough to find a way to fix this
-                BigDecimal bal = new BigDecimal(row.getDbl("Balance", 0.0));
+                String value = row.getDbl("Balance", 0.0).toString();
+                BigDecimal bal = new BigDecimal(value);
                 user.setMoney(bal);
             }
         } catch (SQLException | MaxMoneyException ex) {
