@@ -38,8 +38,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class Migrations {
+
+    private static final Logger logger = Logger.getLogger("EssentialsX-CMI-Importer");
 
     private static final Method SET_OFFLINE_PLAYER_NAME = ReflUtil.getMethodCached(OfflinePlayer.class, "setName", String.class);
 
@@ -101,7 +104,7 @@ public class Migrations {
                     try {
                         user.setHome(name, Util.parseLocation(loc, homeLocSeparator, true));
                     } catch (Exception ex) {
-                        System.out.println("Couldn't set home: " + name + " for " + user.getLastAccountName());
+                        logger.warning("Couldn't set home: " + name + " for " + user.getLastAccountName());
                     }
                 }
             }
@@ -138,7 +141,7 @@ public class Migrations {
                     try {
                         ess.getWarps().setWarp(null, key, loc);
                     } catch (Exception ex) {
-                        System.out.println("Couldn't migrate warp: " + key);
+                        logger.warning("Couldn't migrate warp: " + key);
                     }
                 }
             }
@@ -173,7 +176,7 @@ public class Migrations {
                     long lastLoginTime = row.getLong("LastLoginTime");
                     user.setLastLogin(lastLoginTime);
                 } catch (Exception ex) {
-                    System.out.println("Could not set the last login time for: " + user.getLastAccountName());
+                    logger.warning("Could not set the last login time for: " + user.getLastAccountName());
                 }
             }
         } catch (SQLException ex) {
@@ -192,7 +195,7 @@ public class Migrations {
                     long lastLogoffTime = row.getLong("LastLogoffTime");
                     user.setLastLogout(lastLogoffTime);
                 } catch (Exception ex) {
-                    System.out.println("Could not set the last logoff time for: " + user.getLastAccountName());
+                    logger.warning("Could not set the last logoff time for: " + user.getLastAccountName());
                 }
             }
         } catch (SQLException ex) {
