@@ -1,0 +1,24 @@
+users:
+  migrated: false
+  timestamp: 0
+homes:
+  migrated: false
+  timestamp: 0
+nicknames:
+  migrated: false
+  timestamp: 0
+warps:
+  migrated: false
+  timestamp: 0
+economy:
+  migrated: false
+  timestamp: 0
+last_login:
+  migrated: false
+  timestamp: 0
+last_logout:
+  migrated: false
+  timestamp: 0
+mail:
+  migrated: false
+  timestamp: 0

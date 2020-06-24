@@ -23,17 +23,27 @@ import co.aikar.idb.DatabaseOptions;
 import co.aikar.idb.HikariPooledDatabase;
 import co.aikar.idb.PooledDatabaseOptions;
 import io.github.essentialsx.cmiimporter.config.DatabaseConfig;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+
 public final class CMIImporter extends JavaPlugin implements Listener {
 
     private DatabaseConfig dbConfig;
+    private File migrationFile;
+
+    private FileConfiguration migrationConfig;
 
     @Override
     public void onEnable() {
+        loadMigrationFile();
         getServer().getPluginManager().registerEvents(this, this);
 
         dbConfig = new DatabaseConfig(this);
@@ -57,7 +67,27 @@ public final class CMIImporter extends JavaPlugin implements Listener {
         }
     }
 
+    private void loadMigrationFile() {
+        this.migrationFile = new File(getDataFolder(), "migrations.yml");
+        if (!this.migrationFile.exists()) {
+            saveResource("migrations.yml", false);
+        }
+        migrationConfig = YamlConfiguration.loadConfiguration(this.migrationFile);
+    }
+
+    public void saveMigrationFile() {
+        try {
+            migrationConfig.save(migrationFile);
+        } catch (IOException ex) {
+            getLogger().log(Level.SEVERE, "Could not save migrations to " + migrationFile, ex);
+        }
+    }
+
     DatabaseConfig getDbConfig() {
         return dbConfig;
+    }
+
+    public FileConfiguration getMigrationConfig() {
+        return migrationConfig;
     }
 }

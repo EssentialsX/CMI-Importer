@@ -57,17 +57,17 @@ public class Migrations {
 
         Essentials ess = (Essentials) essPlugin;
         prefix = importerPlugin.getDbConfig().getTablePrefix();
-        migrateUsers(ess);
-        migrateHomes(ess);
-        migrateNicknames(ess);
-        migrateWarps(ess);
-        migrateEconomy(ess);
-        migrateLastLogin(ess);
-        migrateLastLogout(ess);
-        migrateMail(ess);
+        migrateUsers(ess, importerPlugin);
+        migrateHomes(ess, importerPlugin);
+        migrateNicknames(ess, importerPlugin);
+        migrateWarps(ess, importerPlugin);
+        migrateEconomy(ess, importerPlugin);
+        migrateLastLogin(ess, importerPlugin);
+        migrateLastLogout(ess, importerPlugin);
+        migrateMail(ess, importerPlugin);
     }
 
-    static void migrateUsers(Essentials ess) {
+    static void migrateUsers(Essentials ess, CMIImporter importerPlugin) {
         try {
             SET_OFFLINE_PLAYER_NAME.setAccessible(true);
             List<DbRow> results = DB.getResults("SELECT player_uuid, username, FakeAccount FROM " + table("users") + " WHERE player_uuid NOT NULL AND username NOT NULL");
@@ -88,12 +88,13 @@ public class Migrations {
                     user.save();
                 }
             }
+            updateMigrations("users", importerPlugin);
         } catch (SQLException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }
 
-    static void migrateHomes(Essentials ess) {
+    static void migrateHomes(Essentials ess, CMIImporter importerPlugin) {
         final String homeLocSeparator = ":";
         try {
             List<DbRow> results = DB.getResults("SELECT player_uuid, Homes FROM " + table("users") + " WHERE player_uuid NOT NULL AND Homes NOT NULL");
@@ -111,12 +112,13 @@ public class Migrations {
                     }
                 }
             }
+            updateMigrations("homes", importerPlugin);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    static void migrateNicknames(Essentials ess) {
+    static void migrateNicknames(Essentials ess, CMIImporter importerPlugin) {
         try {
             List<DbRow> results = DB.getResults("SELECT player_uuid, nickname FROM " + table("users") + " WHERE player_uuid NOT NULL AND nickname NOT NULL");
             for (DbRow row : results) {
@@ -127,12 +129,13 @@ public class Migrations {
                     user.setNickname(nickname);
                 }
             }
+            updateMigrations("nicknames", importerPlugin);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
     }
 
-    static void migrateWarps(Essentials ess) {
+    static void migrateWarps(Essentials ess, CMIImporter importerPlugin) {
         final String warpLocSeparator = ";";
         try {
             File warpsFile = new File(ess.getDataFolder(), "../CMI/warps.yml");
@@ -148,12 +151,13 @@ public class Migrations {
                     }
                 }
             }
+            updateMigrations("warps", importerPlugin);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    static void migrateEconomy(Essentials ess) {
+    static void migrateEconomy(Essentials ess, CMIImporter importerPlugin) {
         try {
             List<DbRow> results = DB.getResults("SELECT player_uuid, Balance FROM " + table("users") + " WHERE player_uuid NOT NULL AND Balance NOT NULL");
             for (DbRow row : results) {
@@ -164,12 +168,13 @@ public class Migrations {
                 BigDecimal bal = new BigDecimal(value);
                 user.setMoney(bal);
             }
+            updateMigrations("economy", importerPlugin);
         } catch (SQLException | MaxMoneyException ex) {
             ex.printStackTrace();
         }
     }
 
-    static void migrateLastLogin(Essentials ess) {
+    static void migrateLastLogin(Essentials ess, CMIImporter importerPlugin) {
         try {
             List<DbRow> results = DB.getResults("SELECT player_uuid, LastLoginTime FROM " + table("users") + " WHERE player_uuid NOT NULL AND LastLoginTime NOT NULL");
             for (DbRow row : results) {
@@ -182,13 +187,14 @@ public class Migrations {
                     logger.warning("Could not set the last login time for: " + user.getLastAccountName());
                 }
             }
+            updateMigrations("last_login", importerPlugin);
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
 
     // I have this copied to a different method because there might be a chance the last login time / logout time is null separate if a crash were to occur
-    static void migrateLastLogout(Essentials ess) {
+    static void migrateLastLogout(Essentials ess, CMIImporter importerPlugin) {
         try {
             List<DbRow> results = DB.getResults("SELECT player_uuid, LastLogoffTime FROM " + table("users") + " WHERE player_uuid NOT NULL AND LastLogoffTime NOT NULL");
             for (DbRow row : results) {
@@ -201,12 +207,13 @@ public class Migrations {
                     logger.warning("Could not set the last logoff time for: " + user.getLastAccountName());
                 }
             }
+            updateMigrations("last_logout", importerPlugin);
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
 
-    static void migrateMail(Essentials ess) {
+    static void migrateMail(Essentials ess, CMIImporter importerPlugin) {
         try {
             List<DbRow> results = DB.getResults("SELECT player_uuid, Mail FROM " + table("users") + " WHERE player_uuid NOT NULL AND Mail NOT NULL");
             for (DbRow row : results) {
@@ -221,6 +228,7 @@ public class Migrations {
                     user.addMail(tl("mailMessage", mailFormat));
                 }
             }
+            updateMigrations("mail", importerPlugin);
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -229,6 +237,12 @@ public class Migrations {
 
     private static String table(String table) {
         return prefix + table;
+    }
+
+    static void updateMigrations(String path, CMIImporter importerPlugin) {
+        importerPlugin.getMigrationConfig().set(path + "migrated", true);
+        importerPlugin.getMigrationConfig().set(path + "timestamp", System.currentTimeMillis());
+        importerPlugin.saveMigrationFile();
     }
 
 }
