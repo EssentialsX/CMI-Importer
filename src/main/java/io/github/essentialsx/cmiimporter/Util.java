@@ -22,7 +22,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Util {
@@ -36,6 +39,14 @@ public class Util {
         }
 
         return result;
+    }
+
+    public static List<List<String>> parseLists(String input, String listSeparator, String elementSeparator) {
+        List<List<String>> parent = new ArrayList<>();
+        for (String list : input.split(listSeparator)) {
+            parent.add(Arrays.asList(list.split(elementSeparator)));
+        }
+        return parent;
     }
 
     public static Location parseLocation(String input, String separator, boolean reverseYawPitch) {
