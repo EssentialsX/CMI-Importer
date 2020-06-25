@@ -22,19 +22,17 @@ import co.aikar.idb.DB;
 import co.aikar.idb.DatabaseOptions;
 import co.aikar.idb.HikariPooledDatabase;
 import co.aikar.idb.PooledDatabaseOptions;
+import io.github.essentialsx.cmiimporter.commands.MigrationCommand;
 import io.github.essentialsx.cmiimporter.config.DatabaseConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 
-public final class CMIImporter extends JavaPlugin implements Listener {
+public final class CMIImporter extends JavaPlugin {
 
     private DatabaseConfig dbConfig;
     private File migrationFile;
@@ -44,7 +42,6 @@ public final class CMIImporter extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         loadMigrationFile();
-        getServer().getPluginManager().registerEvents(this, this);
 
         dbConfig = new DatabaseConfig(this);
         DatabaseOptions options = dbConfig.getDbOptions();
@@ -53,18 +50,13 @@ public final class CMIImporter extends JavaPlugin implements Listener {
                 .createHikariDatabase();
 
         DB.setGlobalDatabase(db);
+
+        this.getCommand("cmi-import").setExecutor(new MigrationCommand(this));
     }
 
     @Override
     public void onDisable() {
         DB.close();
-    }
-
-    @EventHandler
-    public void onPluginEnable(PluginEnableEvent event) {
-        if (event.getPlugin().getName().equals("Essentials")) {
-            Migrations.migrateAll(this, event.getPlugin());
-        }
     }
 
     private void loadMigrationFile() {

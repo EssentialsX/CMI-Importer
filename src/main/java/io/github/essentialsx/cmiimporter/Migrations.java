@@ -50,7 +50,7 @@ public class Migrations {
 
     private static String prefix;
 
-    static void migrateAll(CMIImporter importerPlugin, Plugin essPlugin) {
+    public static void migrateAll(CMIImporter importerPlugin, Plugin essPlugin) {
         if (!(essPlugin instanceof Essentials)) {
             throw new IllegalArgumentException("The currently installed \"Essentials\" plugin isn't actually EssentialsX!");
         }

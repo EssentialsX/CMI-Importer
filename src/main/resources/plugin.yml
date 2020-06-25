@@ -6,3 +6,8 @@ loadbefore: [CMI, Essentials]
 provides: [CMI]
 authors: [md678685]
 description: Imports CMI data into EssentialsX
+
+commands:
+  cmi-import:
+    description: Imports stuff from CMI
+    usage: /<command>
