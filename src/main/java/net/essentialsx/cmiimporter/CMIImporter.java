@@ -52,7 +52,7 @@ public final class CMIImporter extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPluginEnable(PluginEnableEvent event) {
-        if (event.getPlugin().getName().equals("Essentials")) {
+        if (event.getPlugin().getName().equals("EssentialsX")) {
             Migrations.migrateAll(this, event.getPlugin());
         }
     }
